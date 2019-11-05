@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+        <title>My first three.js app</title>
+        <script src="js/jquery.min.js"></script>
+        
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100%; }
+		</style>
+	</head>
+	<body>
+        <script src="js/three.js"></script>
+        <script src="js/MTLLoader.js"></script>
+		<script>
+            // Our Javascript will go here.
+            var keyboard={};
+            var block;
+            var player = {height:1.8};
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+            var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+            var obj = new THREE.PlaneGeometry(100,100,100,100);
+            var material = new THREE.MeshStandardMaterial( { color: 0xFFD700, side :THREE.DoubleSide, metalness : 1 } );
+            var material2 = new THREE.MeshPhongMaterial( { color: 0x123f4e, side:THREE.DoubleSide} );
+            
+            var cube = new THREE.Mesh( geometry, material );
+            var plane = new THREE.Mesh( obj, material2);
+            scene.add( cube);
+            // scene.add(sphere);
+            plane.rotation.x -= Math.PI /2;
+            plane.receiveShadow=true;
+            cube.receiveShadow=true;
+            cube.castShadow=true;
+            
+            block= new THREE.Mesh(new THREE.BoxGeometry(2,2,2), 
+            new THREE.MeshPhongMaterial( { color: 0xffffff,side:THREE.DoubleSide}) );
+            // plane.position.z=-20;
+            scene.add(plane,block );
+            block.receiveShadow=true;
+            block.castShadow=true;
+            block.position.set(-3,1,1);
+            
+            // camera.lookAt(new THREE.Vector3(0,player.height,0));
+            cube.position.y = 1;
+            camera.position.z = 5;
+            camera.position.y=player.height;
+            // camera.position.y=player.height;
+            var dirlight= new THREE.DirectionalLight (0Xffffff, 1.2);
+            dirlight.position.x=0;
+            dirlight.position.y=30;
+            dirlight.position.z=0;
+            var ambient = new THREE.AmbientLight(0xffffff,0.2);
+            var light=new THREE.PointLight(0xffffff,0.8,18);
+            light.position.set(-3,6,-3);
+            light.castShadow=true;
+            light.shadow.camera.near=0.1;
+            light.shadow.camera.far=25;
+            scene.add(dirlight,ambient,light);
+
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled=true;
+            renderer.shadowMap.type=THREE.BasicShadowMap;
+            document.body.appendChild( renderer.domElement );
+            function animate() {
+	            requestAnimationFrame( animate );
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+                //Cube Movement
+                if(keyboard[37]){
+                    cube.position.x -=Math.PI * 0.01;
+                    camera.position.x -=Math.PI * 0.01;
+                }
+                if(keyboard[38]){
+                    cube.position.y +=Math.PI * 0.01;
+                    camera.position.y +=Math.PI * 0.01;
+                }
+                if(keyboard[39]){
+                    cube.position.x +=Math.PI * 0.01;
+                    camera.position.x +=Math.PI * 0.01;
+                }
+                if(keyboard[40]){
+                    cube.position.y -=Math.PI * 0.01;
+                    camera.position.y -=Math.PI * 0.01;
+                }
+                //Camera Rotation
+                if(keyboard[65]){
+                    camera.rotation.y +=Math.PI * 0.01;
+                }
+                if(keyboard[87]){
+                    camera.position.z -=Math.PI * 0.01;
+                }
+                if(keyboard[68]){
+                    camera.rotation.y -=Math.PI * 0.01;
+                }
+                if(keyboard[83]){
+                    camera.position.z +=Math.PI * 0.01;
+                }
+                if(keyboard[32]){
+                    var bullet= new THREE.Mesh(new THREE.SphereGeometry(0.05,200,200), new THREE.MeshPhongMaterial({color:0xffffff}));
+                    bullet.alive=true;
+                    bullet.position.set(
+                        camera.position.x,
+                        camera.position.y,
+                        camera.position.z
+                    )
+                    bullet.velocity=new THREE.Vector3(
+                        Math.sin(camera.rotation.y),
+                        0,
+                        Math.cos(camera.rotation.y)
+                    )
+                    bullet.position.add(bullet.velocity);
+                    setTimeout(function(){
+                        bullet.alive=false;
+                        scene.remove(bullet);
+                    },1000);
+                    scene.add(bullet);
+                }
+	            renderer.render( scene, camera );
+            }
+            animate();
+            function keyDown(event){
+                keyboard[event.keyCode]= true;
+            }
+            function keyUp(event){
+                keyboard[event.keyCode]= false;
+            }
+
+
+
+            window.addEventListener('keydown',keyDown);
+            window.addEventListener('keyup',keyUp);
+        
+        </script>
+	</body>
+</html>
