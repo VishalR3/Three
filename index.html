@@ -16,7 +16,6 @@
 		<script>
             // Our Javascript will go here.
             var keyboard={};
-            var block;
             var player = {height:1.8};
             var scene = new THREE.Scene();
             var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -33,9 +32,13 @@
             plane.receiveShadow=true;
             cube.receiveShadow=true;
             cube.castShadow=true;
-            
-            block= new THREE.Mesh(new THREE.BoxGeometry(2,2,2), 
-            new THREE.MeshPhongMaterial( { color: 0xffffff,side:THREE.DoubleSide}) );
+            var textureloader= new THREE.TextureLoader();
+            var blocktexture= new textureloader.load("resources/3crates/crate0/crate0_diffuse.png");
+            var blockbumptexture = new textureloader.load("resources/3crates/crate0/crate0_bump.png");
+            var blocknormaltexture = new textureloader.load("resources/3crates/crate0/crate0_normal.png");
+
+            var block= new THREE.Mesh(new THREE.BoxGeometry(2,2,2), 
+            new THREE.MeshPhongMaterial( { color: 0xffffff,side:THREE.DoubleSide,map:blocktexture,bumpMap:blockbumptexture,normalMap:blocknormaltexture}) );
             // plane.position.z=-20;
             scene.add(plane,block );
             block.receiveShadow=true;
@@ -58,6 +61,30 @@
             light.shadow.camera.near=0.1;
             light.shadow.camera.far=25;
             scene.add(dirlight,ambient,light);
+            // Model/material loading!
+	var mtlLoader = new THREE.MTLLoader();
+	mtlLoader.load("resources/DeadTree.mtl", function(materials){
+		
+		materials.preload();
+		var objLoader = new THREE.OBJLoader();
+		objLoader.setMaterials(materials);
+		
+		objLoader.load("resources/DeadTree.obj", function(mesh){
+		
+			mesh.traverse(function(node){
+				if( node instanceof THREE.Mesh ){
+					node.castShadow = true;
+					node.receiveShadow = true;
+				}
+			});
+		
+			scene.add(mesh);
+			mesh.position.set(-5, 0, 4);
+			mesh.rotation.y = -Math.PI/4;
+		});
+		
+	});
+
 
             var renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight);
@@ -70,16 +97,16 @@
                 cube.rotation.y += 0.01;
                 //Cube Movement
                 if(keyboard[37]){
-                    cube.position.x -=Math.PI * 0.01;
-                    camera.position.x -=Math.PI * 0.01;
+                    camera.rotation.y +=Math.PI * 0.01;
+                    
                 }
                 if(keyboard[38]){
                     cube.position.y +=Math.PI * 0.01;
                     camera.position.y +=Math.PI * 0.01;
                 }
                 if(keyboard[39]){
-                    cube.position.x +=Math.PI * 0.01;
-                    camera.position.x +=Math.PI * 0.01;
+                    camera.rotation.y -=Math.PI * 0.01;
+                    
                 }
                 if(keyboard[40]){
                     cube.position.y -=Math.PI * 0.01;
@@ -87,16 +114,20 @@
                 }
                 //Camera Rotation
                 if(keyboard[65]){
-                    camera.rotation.y +=Math.PI * 0.01;
+                    cube.position.x -=Math.PI * 0.01;
+                    camera.position.x -=Math.PI * 0.01;
                 }
                 if(keyboard[87]){
                     camera.position.z -=Math.PI * 0.01;
+                    cube.position.z -=Math.PI * 0.01;
                 }
                 if(keyboard[68]){
-                    camera.rotation.y -=Math.PI * 0.01;
+                    cube.position.x +=Math.PI * 0.01;
+                    camera.position.x +=Math.PI * 0.01;
                 }
                 if(keyboard[83]){
                     camera.position.z +=Math.PI * 0.01;
+                    cube.position.z +=Math.PI * 0.01;
                 }
                 if(keyboard[32]){
                     var bullet= new THREE.Mesh(new THREE.SphereGeometry(0.05,200,200), new THREE.MeshPhongMaterial({color:0xffffff}));
